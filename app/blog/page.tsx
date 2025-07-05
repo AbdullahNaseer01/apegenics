@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Calendar, User, Clock, ArrowRight, Search, TrendingUp, BookOpen } from "lucide-react"
 import Header from "@/components/header"
 import Footer from "@/components/footer"
+import { useRouter } from "next/navigation"
 
 const blogPosts = [
   {
@@ -113,10 +114,20 @@ export default function BlogPage() {
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [selectedTag, setSelectedTag] = useState("")
 
+  const router = useRouter()
+
+  const handlePostClick = (postId: number) => {
+    router.push(`/blog/${postId}`)
+  }
+
   const filteredPosts = blogPosts.filter((post) => {
+    const searchLower = searchTerm.toLowerCase().trim()
     const matchesSearch =
-      post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      post.excerpt.toLowerCase().includes(searchTerm.toLowerCase())
+      searchLower === "" ||
+      post.title.toLowerCase().includes(searchLower) ||
+      post.excerpt.toLowerCase().includes(searchLower) ||
+      post.author.toLowerCase().includes(searchLower) ||
+      post.tags.some((tag) => tag.toLowerCase().includes(searchLower))
     const matchesCategory = selectedCategory === "All" || post.category === selectedCategory
     const matchesTag = selectedTag === "" || post.tags.includes(selectedTag)
     return matchesSearch && matchesCategory && matchesTag
@@ -165,7 +176,11 @@ export default function BlogPage() {
 
           <div className="grid lg:grid-cols-2 gap-8">
             {featuredPosts.map((post) => (
-              <Card key={post.id} className="overflow-hidden hover:shadow-xl transition-shadow group">
+              <Card
+                key={post.id}
+                className="overflow-hidden hover:shadow-xl transition-shadow group cursor-pointer"
+                onClick={() => handlePostClick(post.id)}
+              >
                 <div className="aspect-video overflow-hidden">
                   <img
                     src={post.image || "/placeholder.svg"}
@@ -260,7 +275,11 @@ export default function BlogPage() {
                   <h3 className="text-lg font-semibold text-slate-900 mb-4">Recent Posts</h3>
                   <div className="space-y-4">
                     {recentPosts.map((post) => (
-                      <div key={post.id} className="flex gap-3">
+                      <div
+                        key={post.id}
+                        className="flex gap-3 cursor-pointer hover:bg-slate-50 p-2 rounded-lg transition-colors"
+                        onClick={() => handlePostClick(post.id)}
+                      >
                         <img
                           src={post.image || "/placeholder.svg"}
                           alt={post.title}
@@ -300,7 +319,11 @@ export default function BlogPage() {
 
               <div className="grid md:grid-cols-2 gap-8">
                 {filteredPosts.map((post) => (
-                  <Card key={post.id} className="overflow-hidden hover:shadow-lg transition-shadow group">
+                  <Card
+                    key={post.id}
+                    className="overflow-hidden hover:shadow-lg transition-shadow group cursor-pointer"
+                    onClick={() => handlePostClick(post.id)}
+                  >
                     <div className="aspect-video overflow-hidden">
                       <img
                         src={post.image || "/placeholder.svg"}
@@ -345,7 +368,7 @@ export default function BlogPage() {
                   <p className="text-slate-600 text-lg">No articles found matching your criteria.</p>
                   <Button
                     variant="outline"
-                    className="mt-4"
+                    className="mt-4 bg-transparent"
                     onClick={() => {
                       setSearchTerm("")
                       setSelectedCategory("All")
